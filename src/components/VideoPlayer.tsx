@@ -13,12 +13,11 @@ import {
   NotebookPen,
   X,
 } from 'lucide-react';
+import { useVideo } from '../context/VideoContext';
+import { YouTubeEvent as YTEvent } from 'react-youtube';
 
 interface VideoPlayerProps {
-  /**
-   * YouTube video id to play. Example: "dQw4w9WgXcQ"
-   */
-  videoId: string;
+  videoId?: string;
 }
 
 /**
@@ -40,6 +39,24 @@ export default function VideoPlayer({ videoId }: VideoPlayerProps) {
   const [showNote, setShowNote] = useState(false);
   const [noteText, setNoteText] = useState('');
 
+  const { videoIds } = useVideo();
+  const currentVideoId = videoIds[0] || videoId || 'M7lc1UVf-VE';
+
+  const MIN_QUALITY = 'hd720';
+
+  const enforceQuality = () => {
+    const player = playerRef.current;
+    if (!player) return;
+    const current = player.getPlaybackQuality?.();
+    if (current === 'highres' || current === 'hd1080' || current === 'hd720') return;
+    const levels = player.getAvailableQualityLevels?.();
+    if (levels.includes('hd720')) {
+      player.setPlaybackQuality('hd720');
+    } else if (levels.includes('hd1080')) {
+      player.setPlaybackQuality('hd1080');
+    }
+  };
+
   // Format seconds -> mm:ss
   const formatTime = (time: number) => {
     if (!Number.isFinite(time)) return '0:00';
@@ -51,6 +68,7 @@ export default function VideoPlayer({ videoId }: VideoPlayerProps) {
   const handleReady = (event: YouTubeEvent) => {
     playerRef.current = event.target;
     setDuration(event.target.getDuration());
+    enforceQuality();
   };
 
   const handleStateChange = (event: YouTubeEvent) => {
@@ -136,6 +154,10 @@ export default function VideoPlayer({ videoId }: VideoPlayerProps) {
     setShowNote(false);
   };
 
+  const handleQualityChange = (event: YTEvent) => {
+    enforceQuality();
+  };
+
   useEffect(() => {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
@@ -205,7 +227,7 @@ export default function VideoPlayer({ videoId }: VideoPlayerProps) {
         )}
 
         <YouTube
-          videoId={videoId}
+          videoId={currentVideoId}
           className="absolute inset-0 w-full h-full"
           iframeClassName="w-full h-full rounded"
           opts={{
@@ -218,6 +240,7 @@ export default function VideoPlayer({ videoId }: VideoPlayerProps) {
           }}
           onReady={handleReady}
           onStateChange={handleStateChange}
+          onPlaybackQualityChange={handleQualityChange}
         />
 
         {/* Custom controls */}

@@ -18,7 +18,8 @@
     "video.js": "^8.23.3",
     "videojs-youtube": "^3.0.1",
     "youtube-dl-exec": "^3.0.22",
-    "ytdl-core": "^4.11.5"
+    "ytdl-core": "^4.11.5",
+    "@tanstack/react-query": "^5.29.20"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -26,6 +27,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "tailwindcss": "^4",
+    "daisyui": "^4",
     "typescript": "^5"
   }
 }
